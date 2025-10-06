@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thổi Tắt Nến</title>
+    <style>
+        body { 
+            margin: 0; 
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white; 
+            font-family: Arial; 
+            text-align: center;
+            padding: 20px;
+        }
+        canvas { 
+            border: 2px solid #ffeb3b; 
+            margin: 20px auto; 
+            display: block; 
+            background: #0f1419;
+        }
+        .score { 
+            font-size: 24px; 
+            color: #ffeb3b; 
+            margin: 20px;
+        }
+        .instructions {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+        .back-btn { 
+            background: #ff6b6b; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 10px; 
+            cursor: pointer; 
+            border-radius: 5px;
+        }
+        .start-btn {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🕯️ Thổi Tắt Nến</h1>
+    
+    <div class="instructions">
+        <p>Click vào ngọn nến khi gió thổi qua để thổi tắt!<br>
+        Thổi tắt tất cả 5 ngọn nến để chiến thắng!</p>
+    </div>
+    
+    <div class="score" id="score">Nến còn lại: 5</div>
+    
+    <button class="start-btn" onclick="startGame()">Bắt đầu</button>
+    
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    
+    <button class="back-btn" onclick="window.close()">Đóng</button>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let candles = [];
+        let wind = { x: 0, speed: 3, direction: 1 };
+        let gameActive = false;
+        let candlesLeft = 5;
+
+        function initGame() {
+            candles = [];
+            candlesLeft = 5;
+            
+            // Tạo 5 ngọn nến
+            for (let i = 0; i < 5; i++) {
+                candles.push({
+                    x: 100 + i * 100,
+                    y: 300,
+                    width: 10,
+                    height: 60,
+                    lit: true,
+                    flame: {
+                        x: 100 + i * 100,
+                        y: 240,
+                        size: 15,
+                        flicker: 0
+                    }
+                });
+            }
+            
+            wind.x = 0;
+            wind.speed = 3;
+            wind.direction = 1;
+            
+            document.getElementById('score').textContent = `Nến còn lại: ${candlesLeft}`;
+            gameActive = true;
+        }
+
+        function draw() {
+            // Xóa màn hình
+            ctx.fillStyle = '#0f1419';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Vẽ nền sao
+            drawStars();
+            
+            // Vẽ gió
+            drawWind();
+            
+            // Vẽ nến
+            candles.forEach(candle => {
+                // Thân nến
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(candle.x - candle.width/2, candle.y - candle.height, candle.width, candle.height);
+                
+                // Đế nến
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(candle.x - 15, candle.y, 30, 10);
+                
+                if (candle.lit) {
+                    // Ngọn lửa
+                    const flicker = Math.sin(candle.flame.flicker) * 3;
+                    candle.flame.flicker += 0.2;
+                    
+                    const gradient = ctx.createRadialGradient(
+                        candle.flame.x, candle.flame.y - flicker, 0,
+                        candle.flame.x, candle.flame.y - flicker, candle.flame.size
+                    );
+                    gradient.addColorStop(0, '#ffff00');
+                    gradient.addColorStop(0.5, '#ff4500');
+                    gradient.addColorStop(1, 'transparent');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(candle.flame.x, candle.flame.y - flicker, candle.flame.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Ánh sáng
+                    ctx.shadowColor = '#ff4500';
+                    ctx.shadowBlur = 20;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            });
+        }
+
+        function drawWind() {
+            // Thanh gió di chuyển
+            ctx.fillStyle = 'rgba(100, 150, 255, 0.6)';
+            ctx.fillRect(wind.x, 100, 80, 20);
+            
+            // Mũi tên chỉ hướng gió
+            ctx.fillStyle = '#4ecdc4';
+            ctx.beginPath();
+            if (wind.direction > 0) {
+                ctx.moveTo(wind.x + 80, 110);
+                ctx.lineTo(wind.x + 100, 110);
+                ctx.lineTo(wind.x + 90, 100);
+            } else {
+                ctx.moveTo(wind.x, 110);
+                ctx.lineTo(wind.x - 20, 110);
+                ctx.lineTo(wind.x - 10, 100);
+            }
+            ctx.closePath();
+            ctx.fill();
+            
+            // Cập nhật vị trí gió
+            wind.x += wind.speed * wind.direction;
+            if (wind.x > canvas.width - 80 || wind.x < 0) {
+                wind.direction *= -1;
+            }
+        }
+
+        function drawStars() {
+            ctx.fillStyle = 'white';
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 13) % canvas.width;
+                const y = (i * 7) % 100;
+                const size = Math.random() * 2;
+                ctx.fillRect(x, y, size, size);
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+            
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function startGame() {
+            initGame();
+            update();
+        }
+
+        // Xử lý click thổi nến
+        canvas.addEventListener('click', function(e) {
+            if (!gameActive) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            // Kiểm tra xem click có trong vùng gió không
+            const inWindZone = clickX >= wind.x && clickX <= wind.x + 80 && 
+                              clickY >= 100 && clickY <= 120;
+            
+            if (inWindZone) {
+                // Thổi tắt nến ngẫu nhiên còn cháy
+                const litCandles = candles.filter(candle => candle.lit);
+                if (litCandles.length > 0) {
+                    const randomCandle = litCandles[Math.floor(Math.random() * litCandles.length)];
+                    randomCandle.lit = false;
+                    candlesLeft--;
+                    document.getElementById('score').textContent = `Nến còn lại: ${candlesLeft}`;
+                    
+                    if (candlesLeft === 0) {
+                        setTimeout(() => {
+                            alert('🎉 Chúc mừng! Bạn đã thổi tắt hết nến!');
+                            gameActive = false;
+                        }, 500);
+                    }
+                }
+            }
+        });
+
+        // Khởi tạo game ban đầu
+        initGame();
+        draw();
+    </script>
+</body>
+</html>

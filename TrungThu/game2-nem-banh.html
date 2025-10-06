@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nếm Bánh Đoán Vị</title>
+    <style>
+        body { 
+            margin: 0; 
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white; 
+            font-family: Arial; 
+            text-align: center;
+            padding: 20px;
+        }
+        .question-container {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+            backdrop-filter: blur(10px);
+        }
+        .answer-btn {
+            background: linear-gradient(45deg, #ffeb3b, #ffc107);
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.3s;
+        }
+        .answer-btn:hover {
+            transform: translateY(-3px);
+        }
+        .score {
+            font-size: 24px;
+            color: #ffeb3b;
+            margin: 20px;
+        }
+        .back-btn { 
+            background: #4ecdc4; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 10px; 
+            cursor: pointer; 
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🥮 Nếm Bánh Đoán Vị</h1>
+    <div class="score" id="score">Điểm: 0/5</div>
+    
+    <div class="question-container" id="questionContainer">
+        <!-- Câu hỏi sẽ được JS thêm vào -->
+    </div>
+    
+    <button class="back-btn" onclick="window.close()">Đóng</button>
+
+    <script>
+        const questions = [
+            {
+                question: "Bánh Trung Thu thập cẩm truyền thống thường có nhân gì?",
+                answers: ["Thập cẩm", "Sầu riêng", "Khoai môn", "Đậu xanh"],
+                correct: 0
+            },
+            {
+                question: "Loại bánh Trung Thu nào thường có vỏ mềm?",
+                answers: ["Bánh dẻo", "Bánh nướng", "Bánh dừa", "Bánh phồng"],
+                correct: 0
+            },
+            {
+                question: "Hương vị nào KHÔNG phải là nhân bánh Trung Thu phổ biến?",
+                answers: ["Trà sữa", "Đậu xanh", "Hạt sen", "Khoai môn"],
+                correct: 0
+            },
+            {
+                question: "Màu sắc truyền thống của bánh dẻo là gì?",
+                answers: ["Trắng ngà", "Vàng nâu", "Xanh lá", "Đỏ hồng"],
+                correct: 0
+            },
+            {
+                question: "Thành phần nào thường có trong nhân thập cẩm?",
+                answers: ["Lạp xưởng", "Sô cô la", "Kem tươi", "Trái cây sấy"],
+                correct: 0
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            const container = document.getElementById('questionContainer');
+            
+            container.innerHTML = `
+                <h2>Câu ${currentQuestion + 1}/5</h2>
+                <p>${q.question}</p>
+                <div>
+                    ${q.answers.map((answer, index) => 
+                        `<button class="answer-btn" onclick="checkAnswer(${index})">${answer}</button>`
+                    ).join('')}
+                </div>
+            `;
+        }
+
+        function checkAnswer(selectedIndex) {
+            const correctIndex = questions[currentQuestion].correct;
+            
+            if (selectedIndex === correctIndex) {
+                score++;
+                alert('🎉 Chính xác! +1 điểm');
+            } else {
+                alert(`❌ Sai rồi! Đáp án đúng là: ${questions[currentQuestion].answers[correctIndex]}`);
+            }
+
+            document.getElementById('score').textContent = `Điểm: ${score}/5`;
+            
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            const container = document.getElementById('questionContainer');
+            let message = '';
+            
+            if (score === 5) {
+                message = '🏆 Xuất sắc! Bạn là chuyên gia ẩm thực Trung Thu!';
+            } else if (score >= 3) {
+                message = '👍 Giỏi lắm! Kiến thức ẩm thực của bạn rất tốt!';
+            } else {
+                message = '💪 Cố gắng hơn nữa nhé!';
+            }
+            
+            container.innerHTML = `
+                <h2>Trò chơi kết thúc!</h2>
+                <p>${message}</p>
+                <p>Điểm cuối cùng: ${score}/5</p>
+                <button class="answer-btn" onclick="restartGame()">Chơi lại</button>
+            `;
+        }
+
+        function restartGame() {
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById('score').textContent = `Điểm: ${score}/5`;
+            loadQuestion();
+        }
+
+        // Bắt đầu game
+        loadQuestion();
+    </script>
+</body>
+</html>

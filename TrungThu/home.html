@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hộp Quà Trung Thu Bí Ẩn</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #F5DEB3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('https://mir-s3-cdn-cf.behance.net/project_modules/max_3840/9951cb102521987.5f38ba39430e4.jpg');
+            background-size: cover;
+            background-blend-mode: soft-light;
+        }
+
+        .password-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 400px;
+        }
+
+        .password-container h1 {
+            color: #8B4513;
+            margin-bottom: 20px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            border: 2px solid #D2691E;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .submit-btn {
+            background-color: #FF4500;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #FF6347;
+        }
+    </style>
+</head>
+<body>
+    <div class="password-container">
+        <h1>🏮 Hộp Quà Trung Thu Bí Ẩn 🏮</h1>
+        <form id="passwordForm">
+            <input 
+                type="password" 
+                id="passwordInput" 
+                class="password-input" 
+                placeholder="Nhập mật khẩu để mở hộp quà" 
+                required
+            >
+            <button type="submit" class="submit-btn">
+                Mở Khóa
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('passwordInput').value;
+            
+            // Simple password validation (replace with your actual logic)
+            if (password === 'TrungThu2025') {
+                window.location.href = 'gift-box.html';
+            } else {
+                alert('Mật khẩu không chính xác. Vui lòng thử lại!');
+            }
+        });
+    </script>
+</body>
+</html>
