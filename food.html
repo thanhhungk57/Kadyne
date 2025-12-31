@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Random Thực Đơn Cơm Trưa (3 món)</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #0b1220; color: #e8eefc; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 24px; }
+    .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+    h1 { margin: 0 0 10px; font-size: 22px; }
+    p { margin: 6px 0 0; opacity: 0.9; }
+    .grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 16px; }
+    @media (max-width: 840px){ .grid{ grid-template-columns: 1fr; } }
+    .slot { padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12); }
+    .slot h2 { margin: 0 0 8px; font-size: 14px; letter-spacing: .02em; text-transform: uppercase; opacity: .9; }
+    .dish { font-size: 18px; font-weight: 650; margin: 4px 0 10px; }
+    .meta { font-size: 12px; opacity: .85; line-height: 1.35; }
+    .row { display:flex; gap:10px; flex-wrap: wrap; margin-top: 14px; }
+    button {
+      border: 0; border-radius: 12px; padding: 10px 14px; cursor: pointer; font-weight: 600;
+      background: #7c5cff; color: white;
+    }
+    button.secondary { background: rgba(255,255,255,0.12); color: #e8eefc; border: 1px solid rgba(255,255,255,0.18); }
+    button.danger { background: rgba(255,80,80,0.22); border: 1px solid rgba(255,80,80,0.35); }
+    .lock {
+      display: inline-flex; align-items: center; gap: 8px; margin-top: 6px;
+      font-size: 13px; opacity: .95;
+    }
+    input[type="checkbox"]{ width: 16px; height: 16px; }
+    .footer { margin-top: 12px; font-size: 12px; opacity: 0.85; }
+    .toast {
+      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+      background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,255,0.18);
+      color: #fff; padding: 10px 12px; border-radius: 12px; display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>🍚 Random Thực Đơn Cơm Trưa (3 món)</h1>
+      <p>Bấm <b>Random 3 món</b> để lấy: <b>1 món chính + 1 món canh + 1 món rau/món phụ</b>. Có thể <b>khóa</b> món để random phần còn lại.</p>
+
+      <div class="grid">
+        <div class="slot" id="slotMain">
+          <h2>Món chính</h2>
+          <div class="dish" id="mainDish">—</div>
+          <div class="meta" id="mainNote"></div>
+          <label class="lock"><input type="checkbox" id="lockMain"> Khóa món chính</label>
+        </div>
+
+        <div class="slot" id="slotSoup">
+          <h2>Món canh</h2>
+          <div class="dish" id="soupDish">—</div>
+          <div class="meta" id="soupNote"></div>
+          <label class="lock"><input type="checkbox" id="lockSoup"> Khóa món canh</label>
+        </div>
+
+        <div class="slot" id="slotSide">
+          <h2>Rau / Món phụ</h2>
+          <div class="dish" id="sideDish">—</div>
+          <div class="meta" id="sideNote"></div>
+          <label class="lock"><input type="checkbox" id="lockSide"> Khóa rau/món phụ</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <button id="btnRandom">🎲 Random 3 món</button>
+        <button class="secondary" id="btnRandomAgain">🔁 Random lại (giữ các món đang khóa)</button>
+        <button class="secondary" id="btnCopy">📋 Copy thực đơn</button>
+        <button class="danger" id="btnReset">🧹 Reset</button>
+      </div>
+
+      <div class="footer">
+        Gợi ý: Nếu bạn gái đang đến kỳ, ưu tiên món <b>ấm, ít dầu, dễ tiêu</b> (gừng, canh nhẹ, rau xào nhạt).
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Đã copy!</div>
+
+<script>
+  // ====== Danh sách món (bạn có thể thêm/bớt ở đây) ======
+  const MAIN = [
+    { name: "Thịt kho gừng", note: "Giữ ấm cơ thể, dễ ăn, hợp ngày đau bụng." },
+    { name: "Gà hấp gừng", note: "Ít dầu mỡ, nhẹ bụng." },
+    { name: "Bò xào cần tây", note: "Giàu sắt, giúp hồi sức." },
+    { name: "Đậu hũ sốt cà chua", note: "Mềm, dễ tiêu, nấu nhanh." },
+    { name: "Cá hồi áp chảo ít dầu", note: "Omega-3, ăn “sang” mà vẫn nhẹ." }
+  ];
+
+  const SOUP = [
+    { name: "Canh rau ngót nấu thịt bằm", note: "Dễ tiêu, nhanh, hợp cơm." },
+    { name: "Canh bí đỏ", note: "Ngọt tự nhiên, ấm bụng." },
+    { name: "Canh su su nấu thịt", note: "Nhẹ nhàng, không ngấy." },
+    { name: "Canh rau bina nấu trứng", note: "Nhanh và bổ dưỡng." }
+  ];
+
+  const SIDE = [
+    { name: "Cải thìa xào tỏi", note: "5 phút, ăn giòn, dễ làm." },
+    { name: "Cà rốt xào nấm", note: "Nhạt nhẹ, thơm, dễ tiêu." },
+    { name: "Bông cải luộc + trứng luộc", note: "Siêu nhanh, ít dầu." },
+    { name: "Rau củ xào nhạt", note: "Tùy rau có sẵn, dễ biến tấu." }
+  ];
+
+  // ====== Helpers ======
+  const $ = (id) => document.getElementById(id);
+
+  function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function setDish(type, item) {
+    if (type === "main") { $("mainDish").textContent = item.name; $("mainNote").textContent = item.note; }
+    if (type === "soup") { $("soupDish").textContent = item.name; $("soupNote").textContent = item.note; }
+    if (type === "side") { $("sideDish").textContent = item.name; $("sideNote").textContent = item.note; }
+  }
+
+  function randomize({ forceAll = false } = {}) {
+    const lockMain = $("lockMain").checked;
+    const lockSoup = $("lockSoup").checked;
+    const lockSide = $("lockSide").checked;
+
+    if (forceAll || !lockMain) setDish("main", pickRandom(MAIN));
+    if (forceAll || !lockSoup) setDish("soup", pickRandom(SOUP));
+    if (forceAll || !lockSide) setDish("side", pickRandom(SIDE));
+  }
+
+  function showToast(msg) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(() => t.style.display = "none", 1300);
+  }
+
+  function getMenuText() {
+    const main = $("mainDish").textContent;
+    const soup = $("soupDish").textContent;
+    const side = $("sideDish").textContent;
+    return `Thực đơn trưa (3 món):\n- Món chính: ${main}\n- Món canh: ${soup}\n- Rau/món phụ: ${side}`;
+  }
+
+  async function copyMenu() {
+    const text = getMenuText();
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("✅ Đã copy thực đơn!");
+    } catch (e) {
+      // Fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      showToast("✅ Đã copy (fallback)!");
+    }
+  }
+
+  function resetAll() {
+    $("mainDish").textContent = "—"; $("mainNote").textContent = "";
+    $("soupDish").textContent = "—"; $("soupNote").textContent = "";
+    $("sideDish").textContent = "—"; $("sideNote").textContent = "";
+    $("lockMain").checked = false;
+    $("lockSoup").checked = false;
+    $("lockSide").checked = false;
+  }
+
+  // ====== Events ======
+  $("btnRandom").addEventListener("click", () => randomize({ forceAll: true }));
+  $("btnRandomAgain").addEventListener("click", () => randomize({ forceAll: false }));
+  $("btnCopy").addEventListener("click", copyMenu);
+  $("btnReset").addEventListener("click", resetAll);
+
+  // Auto random lần đầu cho vui
+  randomize({ forceAll: true });
+</script>
+</body>
+</html>
